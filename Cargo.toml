@@ -1,2 +1,2 @@
 [workspace]
-members = ["sprofiler"]
+members = ["sprofiler", "sprofiler-sys"]
