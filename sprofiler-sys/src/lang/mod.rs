@@ -5,4 +5,5 @@ pub mod golang;
 
 pub trait SeccompProfiler {
     fn analyze(&self) -> Result<LinuxSeccomp>;
+    fn output(&self) -> Result<()>;
 }

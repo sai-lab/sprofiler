@@ -8,5 +8,5 @@ edition = "2018"
 
 [dependencies]
 anyhow = "1.0.38"
-serde_json = "1.0.62"
 sprofiler-sys = { path = "../sprofiler-sys" }
+structopt = "0.3.21"
