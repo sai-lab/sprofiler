@@ -8,7 +8,7 @@ pub fn is_syscall(syscall_name: &str) -> bool {
             return true;
         }
     }
-    return false;
+    false
 }
 
 lazy_static! {

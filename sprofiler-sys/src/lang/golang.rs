@@ -77,7 +77,7 @@ fn is_syscalls(fname: &str) -> bool {
     x86_64::is_syscall(fname)
 }
 
-static DEFAULT_ALLOW_SYSCALLS: &[&'static str; 58] = &[
+static DEFAULT_ALLOW_SYSCALLS: &[&str; 58] = &[
     "bind",
     "capget",
     "capset",
