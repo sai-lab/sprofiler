@@ -1,0 +1,2 @@
+PID: 129043
+bpf, clock_nanosleep, close, epoll_ctl, epoll_wait, fstat, ftruncate, futex, getpid, gettid, ioctl, lseek, mmap, nanosleep, openat, perf_event_open, poll, read, readlink, readv, rt_sigprocmask, rt_sigreturn, select, stat, timerfd_settime, uname, wait4, write, writev

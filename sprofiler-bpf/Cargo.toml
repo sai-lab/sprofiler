@@ -1,0 +1,17 @@
+[package]
+name = "sprofiler-bpf"
+version = "0.1.0"
+authors = ["Takashi IIGUNI <iiguni.tks@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+lazy_static = "1.4.0"
+libbpf-rs = "0.7.0"
+
+[dev-dependencies]
+anyhow = "1.0.38"
+lazy_static = "1.4.0"
+plain = "0.2.3"
+ctrlc = { version = "3.1.8", features = ["termination"]  }
