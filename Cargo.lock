@@ -348,7 +348,11 @@ dependencies = [
  "ctrlc",
  "lazy_static",
  "libbpf-rs",
+ "nix 0.20.0",
  "plain",
+ "serde_json",
+ "sprofiler-sys",
+ "structopt",
 ]
 
 [[package]]

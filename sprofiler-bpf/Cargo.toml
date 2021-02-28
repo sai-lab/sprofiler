@@ -9,9 +9,10 @@ edition = "2018"
 [dependencies]
 lazy_static = "1.4.0"
 libbpf-rs = "0.7.0"
-
-[dev-dependencies]
 anyhow = "1.0.38"
-lazy_static = "1.4.0"
 plain = "0.2.3"
 ctrlc = { version = "3.1.8", features = ["termination"]  }
+structopt = "0.3.21"
+sprofiler-sys = { path="../sprofiler-sys" }
+serde_json = "1.0.62"
+nix = "0.20.0"
