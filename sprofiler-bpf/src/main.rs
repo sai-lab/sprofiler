@@ -7,14 +7,16 @@ use std::str;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 
+use anyhow::Context;
 use lazy_static::lazy_static;
 use libbpf_rs::PerfBufferBuilder;
-use nix::unistd::daemon;
+use nix::sys::signal::{kill, Signal};
+use nix::unistd::{daemon, Pid};
 use plain::Plain;
 use structopt::StructOpt;
 
 use sprofiler_bpf::*;
-use sprofiler_sys::oci::{Arch, LinuxSeccomp, LinuxSeccompAction, LinuxSyscall};
+use sprofiler_sys::oci::{Arch, LinuxSeccomp, LinuxSeccompAction, LinuxSyscall, State};
 
 #[repr(C)]
 #[derive(Default, Debug)]
@@ -27,27 +29,16 @@ struct SysEnterEvent {
 
 unsafe impl Plain for SysEnterEvent {}
 
-#[derive(Debug, StructOpt)]
+#[derive(StructOpt)]
 #[structopt(name = "sprofiler-bpf", about = "Dynamic seccomp profiler with eBPF")]
-struct Command {
-    /// Filter container from container id
-    #[structopt(short = "c", long = "container-id")]
-    container_id: String,
-
-    /// Output file
-    #[structopt(short = "o", long = "out")]
-    out: PathBuf,
-
-    /// Pidfile
-    #[structopt(short = "p", long = "pid-file")]
-    pid_file: PathBuf,
+enum SprofilerBPF {
+    Start {},
+    Stop {},
 }
 
 fn handle_event(_cpu: i32, data: &[u8]) {
     let mut event = SysEnterEvent::default();
     plain::copy_from_bytes(&mut event, data).expect("Data buffer was too short or invalid");
-
-    // let comm = str::from_utf8(&event.comm).unwrap().trim_end_matches('\0');
 
     let syscall_name = syscalls::SYSCALLS
         .get(&(*&event.syscall_nr as u32))
@@ -57,8 +48,6 @@ fn handle_event(_cpu: i32, data: &[u8]) {
         let mut syscall_list = SYSCALL_LIST.lock().unwrap();
         syscall_list.insert(syscall_name);
     }
-
-    println!("syscall: {}", syscall_name);
 }
 
 fn handle_lost_event(cpu: i32, count: u64) {
@@ -70,7 +59,6 @@ lazy_static! {
 }
 
 fn output_syscalls(path: PathBuf) -> anyhow::Result<()> {
-    let file = File::create(path)?;
     let syscall_list = SYSCALL_LIST.lock().unwrap();
     let mut syscall_list: Vec<String> = syscall_list
         .clone()
@@ -89,33 +77,69 @@ fn output_syscalls(path: PathBuf) -> anyhow::Result<()> {
         architectures: Some(vec![Arch::SCMP_ARCH_X86_64]),
     };
 
+    let file = File::create(path)?;
     serde_json::to_writer(&file, &seccomp_profile)?;
+
     Ok(())
 }
 
-/// only work when cgroup driver is systemd & v2
+/// only work when cgroup driver is systemd & v2 on podman
 fn get_contianer_cgroup_id(container_id: &str) -> anyhow::Result<u64> {
-    let path = format!("/sys/fs/cgroup/system.slice/docker-{}.scope/", container_id);
+    let path = format!(
+        "/sys/fs/cgroup/machine.slice/libpod-{}.scope/container",
+        container_id
+    );
     let path = PathBuf::from(path);
-    let meta = fs::metadata(&path)?;
+    let meta = fs::metadata(&path)
+        .with_context(|| format!("failed to get metadata from {}", path.display()))?;
     Ok(meta.ino())
 }
 
-fn create_pid_file(path: PathBuf, pid: u32) -> anyhow::Result<()> {
+fn create_pid_file(path: PathBuf, pid: i32) -> anyhow::Result<()> {
     let mut file = File::create(path)?;
     file.write_all(&pid.to_string().as_bytes())?;
 
     Ok(())
 }
 
-fn main() -> anyhow::Result<()> {
-    let command = Command::from_args();
-    create_pid_file(command.pid_file, std::process::id())?;
+fn read_pid_file(path: PathBuf) -> anyhow::Result<i32> {
+    let mut file = File::open(path)?;
+    let mut s = String::new();
+    file.read_to_string(&mut s)?;
+    let pid = s.parse()?;
+    Ok(pid)
+}
+
+fn container_state_load_from_reader<R: std::io::Read>(reader: R) -> anyhow::Result<State> {
+    let state: State = serde_json::from_reader(reader)?;
+    Ok(state)
+}
+
+fn get_trace_target_path(state: &State) -> Option<PathBuf> {
+    if let Some(annotations) = &state.annotations {
+        annotations
+            .get("io.sprofiler.output_seccomp_profile_path")
+            .map(PathBuf::from)
+    } else {
+        None
+    }
+}
+
+fn start_tracing(state: &State) -> anyhow::Result<()> {
+    let output_path = match get_trace_target_path(&state) {
+        Some(path) => path,
+        None => std::process::exit(0),
+    };
+
+    create_pid_file(
+        state.bundle.join("sprofiler.pid"),
+        std::process::id() as i32,
+    )?;
 
     let mut skel_builder = SystraceSkelBuilder::default();
     let mut systrace_skel = skel_builder.open()?;
 
-    systrace_skel.rodata().target_cgid = get_contianer_cgroup_id(&command.container_id)?;
+    systrace_skel.rodata().target_cgid = get_contianer_cgroup_id(&state.id)?;
 
     let mut skel = systrace_skel.load()?;
 
@@ -143,7 +167,27 @@ fn main() -> anyhow::Result<()> {
         }
     }
 
-    output_syscalls(command.out)?;
+    output_syscalls(output_path)?;
+
+    Ok(())
+}
+
+fn stop_tracing(state: &State) -> anyhow::Result<()> {
+    let pid = read_pid_file(state.bundle.join("sprofiler.pid"))?;
+    kill(Pid::from_raw(pid), Signal::SIGTERM)?;
+
+    Ok(())
+}
+
+fn main() -> anyhow::Result<()> {
+    let args = SprofilerBPF::from_args();
+
+    let state = container_state_load_from_reader(std::io::stdin())?;
+
+    match args {
+        SprofilerBPF::Start {} => start_tracing(&state)?,
+        SprofilerBPF::Stop {} => stop_tracing(&state)?,
+    }
 
     Ok(())
 }
