@@ -27,8 +27,6 @@ pub struct State {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pid: Option<i32>,
     pub bundle: PathBuf,
-    // pub rootfs: String,
-    // pub owner: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub annotations: Option<HashMap<String, String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -506,19 +504,6 @@ pub struct Windows {}
 #[serde(rename_all = "camelCase")]
 pub struct VM {}
 
-#[macro_export]
-macro_rules! vec_str_convert {
-    ( $( $x:expr ),* ) => {
-        {
-            let mut temp_vec = vec![];
-            $(
-                temp_vec.push(String::from($x));
-            )*
-            temp_vec
-        }
-    };
-}
-
 impl Default for Spec {
     fn default() -> Self {
         Self::new(false)
@@ -542,39 +527,39 @@ impl Spec {
                     additional_gids: None,
                     username: None,
                 },
-                args: vec_str_convert!["echo", "hello"],
-                env: Some(vec_str_convert![
-                    "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-                    "TERM=xterm"
+                args: vec!["echo".into(), "hello".into()],
+                env: Some(vec![
+                    "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin".into(),
+                    "TERM=xterm".into(),
                 ]),
                 cwd: "/".into(),
                 command_line: None,
                 no_new_privileges: Some(true),
                 capabilities: Some(LinuxCapabilities {
-                    bounding: Some(vec_str_convert![
-                        "CAP_AUDIT_WRITE",
-                        "CAP_KILL",
-                        "CAP_NET_BIND_SERVICE"
+                    bounding: Some(vec![
+                        "CAP_AUDIT_WRITE".into(),
+                        "CAP_KILL".into(),
+                        "CAP_NET_BIND_SERVICE".into(),
                     ]),
-                    permitted: Some(vec_str_convert![
-                        "CAP_AUDIT_WRITE",
-                        "CAP_KILL",
-                        "CAP_NET_BIND_SERVICE"
+                    permitted: Some(vec![
+                        "CAP_AUDIT_WRITE".into(),
+                        "CAP_KILL".into(),
+                        "CAP_NET_BIND_SERVICE".into(),
                     ]),
-                    inheritable: Some(vec_str_convert![
-                        "CAP_AUDIT_WRITE",
-                        "CAP_KILL",
-                        "CAP_NET_BIND_SERVICE"
+                    inheritable: Some(vec![
+                        "CAP_AUDIT_WRITE".into(),
+                        "CAP_KILL".into(),
+                        "CAP_NET_BIND_SERVICE".into(),
                     ]),
-                    ambient: Some(vec_str_convert![
-                        "CAP_AUDIT_WRITE",
-                        "CAP_KILL",
-                        "CAP_NET_BIND_SERVICE"
+                    ambient: Some(vec![
+                        "CAP_AUDIT_WRITE".into(),
+                        "CAP_KILL".into(),
+                        "CAP_NET_BIND_SERVICE".into(),
                     ]),
-                    effective: Some(vec_str_convert![
-                        "CAP_AUDIT_WRITE",
-                        "CAP_KILL",
-                        "CAP_NET_BIND_SERVICE"
+                    effective: Some(vec![
+                        "CAP_AUDIT_WRITE".into(),
+                        "CAP_KILL".into(),
+                        "CAP_NET_BIND_SERVICE".into(),
                     ]),
                 }),
                 rlimits: Some(vec![POSIXRlimit {
@@ -586,7 +571,7 @@ impl Spec {
                 oom_score_adj: None,
                 selinux_label: None,
             }),
-            hostname: Some("runrs".into()),
+            hostname: None,
             mounts: vec![
                 Mount {
                     destination: "/proc".into(),
@@ -598,43 +583,48 @@ impl Spec {
                     destination: "/dev".into(),
                     type_: "tmpfs".into(),
                     source: "tmpfs".into(),
-                    options: Some(vec_str_convert!(
-                        "nosuid",
-                        "strictatime",
-                        "mode=755",
-                        "size=65536k"
-                    )),
+                    options: Some(vec![
+                        "nosuid".into(),
+                        "strictatime".into(),
+                        "mode=755".into(),
+                        "size=65536k".into(),
+                    ]),
                 },
                 Mount {
                     destination: "/dev/pts".into(),
                     type_: "devpts".into(),
                     source: "devpts".into(),
-                    options: Some(vec_str_convert!(
-                        "nosuid",
-                        "noexec",
-                        "newinstance",
-                        "ptmxmode=0666",
-                        "mode=0620",
-                        "gid=5"
-                    )),
+                    options: Some(vec![
+                        "nosuid".into(),
+                        "noexec".into(),
+                        "newinstance".into(),
+                        "ptmxmode=0666".into(),
+                        "mode=0620".into(),
+                        "gid=5".into(),
+                    ]),
                 },
                 Mount {
                     destination: "/dev/shm".into(),
                     type_: "tmpfs".into(),
                     source: "shm".into(),
-                    options: Some(vec_str_convert![
-                        "nosuid",
-                        "noexec",
-                        "nodev",
-                        "mode=1777",
-                        "size=65536k"
+                    options: Some(vec![
+                        "nosuid".into(),
+                        "noexec".into(),
+                        "nodev".into(),
+                        "mode=1777".into(),
+                        "size=65536k".into(),
                     ]),
                 },
                 Mount {
                     destination: "/dev/mqueue".into(),
                     type_: "mqueue".into(),
                     source: "mqueue".into(),
-                    options: Some(vec_str_convert!["nosuid", "noexec", "nodev", "ro"]),
+                    options: Some(vec![
+                        "nosuid".into(),
+                        "noexec".into(),
+                        "nodev".into(),
+                        "ro".into(),
+                    ]),
                 },
             ],
             linux: Some(Spec::linux(is_rootless)),
@@ -667,22 +657,22 @@ impl Spec {
             .collect();
 
         Linux {
-            masked_paths: Some(vec_str_convert![
-                "/proc/kcore",
-                "/proc/latency_stats",
-                "/proc/timer_list",
-                "/proc/timer_stats",
-                "/proc/sched_debug",
-                "/sys/firmware",
-                "/proc/scsi"
+            masked_paths: Some(vec![
+                "/proc/kcore".into(),
+                "/proc/latency_stats".into(),
+                "/proc/timer_list".into(),
+                "/proc/timer_stats".into(),
+                "/proc/sched_debug".into(),
+                "/sys/firmware".into(),
+                "/proc/scsi".into(),
             ]),
-            readonly_paths: Some(vec_str_convert![
-                "/proc/asound",
-                "/proc/bus",
-                "/proc/fs",
-                "/proc/irq",
-                "/proc/sys",
-                "/proc/sysrq-trigger"
+            readonly_paths: Some(vec![
+                "/proc/asound".into(),
+                "/proc/bus".into(),
+                "/proc/fs".into(),
+                "/proc/irq".into(),
+                "/proc/sys".into(),
+                "/proc/sysrq-trigger".into(),
             ]),
             resources: Some(LinuxResources {
                 devices: Some(vec![LinuxDeviceCgroup {
