@@ -43,7 +43,7 @@ fn handle_event(_cpu: i32, data: &[u8]) {
     let mut event = SysEnterEvent::default();
     plain::copy_from_bytes(&mut event, data).expect("Data buffer was too short or invalid");
 
-    let syscall_name = syscalls::SYSCALLS.get(&(*&event.syscall_nr as u32));
+    let syscall_name = syscalls::SYSCALLS.get(&(event.syscall_nr as u32));
 
     if let Some(syscall_name) = syscall_name {
         let mut syscall_list = SYSCALL_LIST.lock().unwrap();
@@ -132,13 +132,10 @@ pub fn trace_command() -> Result<()> {
         sigs.extend(TERM_SIGNALS);
         let mut signals = SignalsInfo::<WithOrigin>::new(&sigs).expect("Signal new");
         for info in &mut signals {
-            match info.signal {
-                SIGUSR1 => {
-                    spinlock_clone.store(false, Ordering::SeqCst);
-                    break;
-                }
-                _ => {}
-            };
+            if info.signal == SIGUSR1 {
+                spinlock_clone.store(false, Ordering::SeqCst);
+                break;
+            }
         }
     });
 
