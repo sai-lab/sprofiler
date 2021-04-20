@@ -9,6 +9,7 @@ use std::thread;
 
 use anyhow::{Context, Result};
 use lazy_static::lazy_static;
+use libbpf_rs::Error;
 use libbpf_rs::PerfBufferBuilder;
 use nix::sys::signal::{kill, Signal};
 use nix::unistd::Pid;
@@ -42,14 +43,11 @@ fn handle_event(_cpu: i32, data: &[u8]) {
     let mut event = SysEnterEvent::default();
     plain::copy_from_bytes(&mut event, data).expect("Data buffer was too short or invalid");
 
-    let syscall_name = syscalls::SYSCALLS
-        .get(&(*&event.syscall_nr as u32))
-        .unwrap_or(&"unknown");
+    let syscall_name = syscalls::SYSCALLS.get(&(*&event.syscall_nr as u32));
 
-    if syscall_name != &"unknown" {
+    if let Some(syscall_name) = syscall_name {
         let mut syscall_list = SYSCALL_LIST.lock().unwrap();
         syscall_list.insert(syscall_name);
-        // println!("{}", syscall_name);
     }
 }
 
@@ -107,8 +105,10 @@ fn start_tracing(spinlock: Arc<AtomicBool>, state: &State) -> Result<()> {
         .build()?;
 
     while spinlock.load(Ordering::Relaxed) {
-        // perf.poll(std::time::Duration::from_millis(100))?;
-        perf.poll(std::time::Duration::from_millis(100));
+        match perf.poll(std::time::Duration::from_millis(100)) {
+            Ok(()) | Err(Error::System(4)) => {} // EINTER
+            Err(e) => return Err(e.into()),
+        };
     }
 
     if let Some(path) = ociutil::get_trace_target_path(state) {
@@ -137,8 +137,6 @@ pub fn trace_command() -> Result<()> {
                     spinlock_clone.store(false, Ordering::SeqCst);
                     break;
                 }
-                SIGUSR2 => {}
-                SIGTERM => {}
                 _ => {}
             };
         }
