@@ -20,7 +20,8 @@ struct Command {
     #[structopt(short, long, parse(from_os_str))]
     out: PathBuf,
     // TODO: Language Option
-    // --go, --rust
+    // #[structopt(short, long)]
+    // lang: String
 }
 
 fn main() -> Result<()> {

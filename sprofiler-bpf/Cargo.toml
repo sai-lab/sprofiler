@@ -1,0 +1,18 @@
+[package]
+name = "sprofiler-bpf"
+version = "0.1.0"
+authors = ["Takashi IIGUNI <iiguni.tks@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+lazy_static = "1.4.0"
+libbpf-rs = "0.7.0"
+anyhow = "1.0.38"
+plain = "0.2.3"
+structopt = "0.3.21"
+sprofiler-sys = { path="../sprofiler-sys" }
+serde_json = "1.0.62"
+nix = "0.20.0"
+signal-hook = { version = "0.3.6", features = ["extended-siginfo", "iterator"]  }
