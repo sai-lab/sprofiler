@@ -10,6 +10,8 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
+      - name: Install libraries
+        run: apt-get install -y libelf-dev libgcc-s1 libbpf-dev clang
       - uses: actions/cache@v2
         with:
           path: |
