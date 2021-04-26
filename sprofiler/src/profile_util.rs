@@ -37,7 +37,7 @@ pub fn merge(profiles: Vec<LinuxSeccomp>) -> LinuxSeccomp {
 
     let mut names: Vec<String> = profiles
         .into_iter()
-        .map(|profile| extract_syscall_names(profile))
+        .map(extract_syscall_names)
         .flatten()
         .collect();
 
@@ -47,7 +47,7 @@ pub fn merge(profiles: Vec<LinuxSeccomp>) -> LinuxSeccomp {
         default_action: LinuxSeccompAction::SCMP_ACT_ERRNO,
         architectures: Some(vec![Arch::SCMP_ARCH_X86, Arch::SCMP_ARCH_X86_64]),
         syscalls: Some(vec![LinuxSyscall {
-            names: names,
+            names,
             action: LinuxSeccompAction::SCMP_ACT_ALLOW,
             args: None,
         }]),
