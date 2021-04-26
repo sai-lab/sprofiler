@@ -252,7 +252,7 @@ pub struct LinuxDeviceCgroup {
 // pub type LinuxSeccompAction = String;
 pub type LinuxSeccompOperator = String;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[allow(non_camel_case_types)]
 pub enum Arch {
     SCMP_ARCH_X86,
@@ -275,7 +275,7 @@ pub enum Arch {
     SCMP_ARCH_PARISC64,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[allow(non_camel_case_types)]
 pub enum LinuxSeccompAction {
     SCMP_ACT_KILL,
@@ -296,7 +296,7 @@ pub struct LinuxSeccomp {
     pub syscalls: Option<Vec<LinuxSyscall>>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct LinuxSyscall {
     pub names: Vec<String>,
@@ -305,7 +305,7 @@ pub struct LinuxSyscall {
     pub args: Option<Vec<LinuxSeccompArg>>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct LinuxSeccompArg {
     pub index: u64,
