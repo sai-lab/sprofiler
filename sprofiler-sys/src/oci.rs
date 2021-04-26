@@ -257,7 +257,7 @@ pub type LinuxSeccompOperator = String;
 pub enum Arch {
     SCMP_ARCH_X86,
     SCMP_ARCH_X86_64,
-    SCMP_ARCH_X86_X32,
+    SCMP_ARCH_X32,
     SCMP_ARCH_ARM,
     SCMP_ARCH_AARCH64,
     SCMP_ARCH_MIPS,
