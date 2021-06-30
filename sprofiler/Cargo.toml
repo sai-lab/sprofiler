@@ -13,3 +13,4 @@ anyhow = "1.0.38"
 serde_json = "1.0.64"
 sprofiler-sys = { path = "../sprofiler-sys" }
 structopt = "0.3.21"
+oci_runtime_spec = { path = "../oci-runtime-spec" }

@@ -1,5 +1,5 @@
-use crate::oci::LinuxSeccomp;
 use anyhow::Result;
+use oci_runtime_spec::LinuxSeccomp;
 
 pub mod golang;
 

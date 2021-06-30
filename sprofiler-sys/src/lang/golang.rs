@@ -7,7 +7,7 @@ use anyhow::Result;
 use regex::Regex;
 
 use crate::lang::SeccompProfiler;
-use crate::oci::{Arch, LinuxSeccomp, LinuxSeccompAction, LinuxSyscall};
+use oci_runtime_spec::{Arch, LinuxSeccomp, LinuxSeccompAction, LinuxSyscall};
 
 #[derive(Default)]
 pub struct GoSeccompProfiler {
