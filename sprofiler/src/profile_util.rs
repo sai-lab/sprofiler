@@ -3,7 +3,7 @@ use std::fs::File;
 use std::path::{Path, PathBuf};
 
 use anyhow::Result;
-use sprofiler_sys::oci::{Arch, LinuxSeccomp, LinuxSeccompAction, LinuxSyscall};
+use oci_runtime_spec::{Arch, LinuxSeccomp, LinuxSeccompAction, LinuxSyscall};
 
 #[derive(Debug, PartialEq)]
 pub enum DiffStatus {

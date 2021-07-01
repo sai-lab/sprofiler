@@ -1,2 +1,2 @@
 [workspace]
-members = ["sprofiler", "sprofiler-sys", "sprofiler-bpf"]
+members = ["sprofiler", "sprofiler-sys", "sprofiler-bpf", "oci-runtime-spec"]
