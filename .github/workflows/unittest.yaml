@@ -22,7 +22,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: install
-          args: cargo-libbpf
+          args: libbpf-cargo
       - uses: actions-rs/cargo@v1
         with:
           command: libbpf
