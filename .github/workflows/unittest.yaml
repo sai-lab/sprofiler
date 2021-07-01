@@ -21,5 +21,13 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - uses: actions-rs/cargo@v1
         with:
+          command: install
+          args: cargo-libbpf
+      - uses: actions-rs/cargo@v1
+        with:
+          command: libbpf
+          args: make
+      - uses: actions-rs/cargo@v1
+        with:
           command: test
           args: --all-features
