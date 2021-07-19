@@ -1,7 +1,6 @@
 use std::collections::HashSet;
 use std::fs::File;
 use std::path::PathBuf;
-use std::process::Command;
 
 use anyhow::Result;
 use regex::Regex;
@@ -36,8 +35,13 @@ impl SeccompProfiler for GoSeccompProfiler {
 
 impl GoSeccompProfiler {
     fn run(&self) -> Result<LinuxSyscall> {
-        let output = Command::new("nm").arg(&self.target_bin).output()?;
-        let lines = String::from_utf8_lossy(&output.stdout);
+        let file = elf::File::open_path(&self.target_bin).unwrap();
+        let section = file.get_section(".symtab").unwrap();
+
+        let symbols = file.get_symbols(&section).unwrap_or_default();
+        let lines = symbols
+            .iter()
+            .fold(String::new(), |a, b| format!("{}\n{}", a, b));
 
         let re = Regex::new(r"syscall.[a-zA-Z][\w]+").unwrap();
         let syscalls: HashSet<String> = re
