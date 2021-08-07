@@ -50,7 +50,7 @@ fn do_run(bin: PathBuf, out: PathBuf, map: Option<PathBuf>, lang: &str) -> Resul
         SeccompProfilerBuilder::new(bin, out, Language::from_str(lang).unwrap());
 
     if let Some(map) = map {
-        sprofiler_builder.set_syscall_map(map.clone());
+        sprofiler_builder.set_syscall_map(map);
     }
 
     let sprofiler = sprofiler_builder.build();
