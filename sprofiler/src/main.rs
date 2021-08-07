@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 use anyhow::Result;
-use sprofiler_sys::lang::{Language, SeccompProfiler, SeccompProfilerBuilder};
+use sprofiler_sys::lang::{Language, SeccompProfilerBuilder};
 use structopt::StructOpt;
 
 mod profile_util;
