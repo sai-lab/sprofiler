@@ -1,9 +1,9 @@
 use std::fs::File;
 use std::path::PathBuf;
+use std::str::FromStr;
 
 use anyhow::Result;
-use sprofiler_sys::lang::golang::GoSeccompProfiler;
-use sprofiler_sys::lang::SeccompProfiler;
+use sprofiler_sys::lang::{Language, SeccompProfiler, SeccompProfilerBuilder};
 use structopt::StructOpt;
 
 mod profile_util;
@@ -12,24 +12,29 @@ use profile_util::DiffStatus;
 #[derive(Debug, StructOpt)]
 #[structopt(name = "sprofiler")]
 enum Command {
+    /// Generate seccomp profile from ELF
     Run {
         /// Input binary file
         #[structopt(short, long, parse(from_os_str))]
         bin: PathBuf,
-
         /// Output seccomp profile path
         #[structopt(short, long, parse(from_os_str))]
         out: PathBuf,
-        // TODO: Language Option
-        // #[structopt(short, long)]
-        // lang: String
+        /// Mapped data for function to syscall name
+        #[structopt(short = "m", long = "map", parse(from_os_str))]
+        map: Option<PathBuf>,
+        /// Analyze Binary Language (e.g. c, go)
+        #[structopt(short, long)]
+        lang: String,
     },
+    /// Output the difference between the two profiles
     Diff {
         #[structopt(parse(from_os_str))]
         path1: PathBuf,
         #[structopt(parse(from_os_str))]
         path2: PathBuf,
     },
+    /// Combine two profiles
     Merge {
         /// Source seccomp profile
         #[structopt(short, long, parse(from_os_str))]
@@ -40,12 +45,15 @@ enum Command {
     },
 }
 
-fn do_run(bin: PathBuf, out: PathBuf) -> Result<()> {
-    let sprofiler = GoSeccompProfiler {
-        target_bin: bin,
-        destination: out,
-    };
+fn do_run(bin: PathBuf, out: PathBuf, map: Option<PathBuf>, lang: &str) -> Result<()> {
+    let mut sprofiler_builder =
+        SeccompProfilerBuilder::new(bin, out, Language::from_str(lang).unwrap());
 
+    if let Some(map) = map {
+        sprofiler_builder.set_syscall_map(map.clone());
+    }
+
+    let sprofiler = sprofiler_builder.build();
     sprofiler.output()?;
 
     Ok(())
@@ -111,7 +119,12 @@ fn main() -> Result<()> {
     let command = Command::from_args();
 
     match command {
-        Command::Run { bin, out } => do_run(bin, out)?,
+        Command::Run {
+            bin,
+            out,
+            lang,
+            map,
+        } => do_run(bin, out, map, &lang)?,
         Command::Diff { path1, path2 } => do_diff(path1, path2)?,
         Command::Merge { paths, out } => do_merge(paths, out)?,
     };
