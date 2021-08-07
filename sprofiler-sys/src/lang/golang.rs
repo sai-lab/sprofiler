@@ -36,9 +36,6 @@ impl SeccompProfiler for GoSeccompProfiler {
 
 impl GoSeccompProfiler {
     fn run(&self) -> Result<LinuxSyscall> {
-        // let file = elf::File::open_path(&self.target_bin).unwrap();
-        // let section = file.get_section(".symtab").unwrap();
-
         let bin_data = std::fs::read(&self.target_bin)?;
         let obj_file = object::File::parse(&*bin_data)?;
 
