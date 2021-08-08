@@ -3,6 +3,7 @@ name = "sprofiler-bpf"
 version = "0.1.0"
 authors = ["Takashi IIGUNI <iiguni.tks@gmail.com>"]
 edition = "2018"
+readme = "README.md"
 
 license-file = "../LICENSE"
 
@@ -24,11 +25,11 @@ oci_runtime_spec = { path = "../oci-runtime-spec" }
 maintainer = "Takashi IIGUNI <iiguni.tks@gmail.com>"
 copyright = "2021, Takashi IIGUNI <iiguni.tks@gmail.com>"
 license-file = ["../LICENSE"]
-depends = "$auto"
+depends = "libelf-dev,libgcc-s1,libbpf-dev"
 section = "utility"
 priority = "optional"
 assets = [
     ["target/release/sprofiler-bpf", "usr/bin/", "755"],
-    ["hooks/sprofiler-prestop.json", "usr/share/containers/oci/hooks.d/", "755"],
-    ["hooks/sprofiler-prestart.json", "usr/share/containers/oci/hooks.d/", "755"],
+    ["hooks/sprofiler-prestart.json", "usr/share/containers/oci/hooks.d/", "644"],
+    ["hooks/sprofiler-poststop.json", "usr/share/containers/oci/hooks.d/", "644"],
 ]
