@@ -13,7 +13,7 @@ jobs:
         with:
           toolchain: stable
       - name: Install libraries
-        run: sudo apt-get install -y libelf-dev libgcc-s1 libbpf-dev clang linux-tools-generic make pkg-config
+        run: sudo apt-get install -y libelf-dev libgcc-s1 libbpf-dev clang linux-cloud-tools linux-tools-generic make pkg-config
       - uses: actions/cache@v2
         with:
           path: |
