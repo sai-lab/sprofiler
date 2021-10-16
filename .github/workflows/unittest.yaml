@@ -1,11 +1,5 @@
 name: CI
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+on: [push, pull_request]
 
 # Note: runnner must use BTF(BPF Typed format) Kernel
 # Ubuntu >= 20.10
