@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 lazy_static = "1.4.0"
-libbpf-rs = "0.7.0"
+libbpf-rs = "0.11"
 anyhow = "1.0.38"
 plain = "0.2.3"
 structopt = "0.3.21"
