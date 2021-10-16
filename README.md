@@ -1,11 +1,25 @@
-# sprofiler
+# Sprofiler
 
-Hybrid(Static and Dynamic) Seccomp Profiling for OCI Container
-
-## Architecture
+Seccomp Profiler for OCI Container
 
 ## Environment
 
+**sprofiler-bpf**
+- Ubuntu >= 20.10
+
 ## Getting Started
+
+### sprofiler
+
+```
+cargo build
+```
+
+### sprofiler-bpf
+
+```
+sudo apt install libelf-dev libgcc-s1 libbpf-dev clang
+cargo libbpf make
+```
 
 ## License

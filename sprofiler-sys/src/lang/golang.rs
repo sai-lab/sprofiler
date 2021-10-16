@@ -1,13 +1,13 @@
 use std::collections::HashSet;
 use std::fs::File;
 use std::path::PathBuf;
-use std::process::Command;
 
 use anyhow::Result;
+use object::{Object, ObjectSymbol};
+use oci_runtime_spec::{Arch, LinuxSeccomp, LinuxSeccompAction, LinuxSyscall};
 use regex::Regex;
 
 use crate::lang::SeccompProfiler;
-use crate::oci::{Arch, LinuxSeccomp, LinuxSeccompAction, LinuxSyscall};
 
 #[derive(Default)]
 pub struct GoSeccompProfiler {
@@ -36,23 +36,19 @@ impl SeccompProfiler for GoSeccompProfiler {
 
 impl GoSeccompProfiler {
     fn run(&self) -> Result<LinuxSyscall> {
-        let output = Command::new("nm").arg(&self.target_bin).output()?;
-        let lines = String::from_utf8_lossy(&output.stdout);
+        let bin_data = std::fs::read(&self.target_bin)?;
+        let obj_file = object::File::parse(&*bin_data)?;
+
+        let lines = obj_file.symbols().fold(String::new(), |a, b| {
+            format!("{}\n{}", a, b.name().unwrap())
+        });
 
         let re = Regex::new(r"syscall.[a-zA-Z][\w]+").unwrap();
-        let mut syscalls: HashSet<String> = re
+        let syscalls: HashSet<String> = re
             .captures_iter(&lines)
             .map(|cap| cap[0].replace("syscall.", "").to_lowercase())
             .filter(|symbol| is_syscalls(symbol))
             .collect();
-
-        DEFAULT_ALLOW_SYSCALLS
-            .to_vec()
-            .into_iter()
-            .map(String::from)
-            .for_each(|syscall| {
-                syscalls.insert(syscall);
-            });
 
         let mut syscalls: Vec<String> = syscalls.into_iter().collect();
         syscalls.sort();
@@ -76,67 +72,3 @@ fn is_syscalls(fname: &str) -> bool {
 
     x86_64::is_syscall(fname)
 }
-
-static DEFAULT_ALLOW_SYSCALLS: &[&str; 58] = &[
-    "bind",
-    "capget",
-    "capset",
-    "chdir",
-    "clone",
-    "close",
-    // debug {{{
-    "dup",
-    "dup2",
-    "dup3",
-    // }}}
-    "execve",
-    "epoll_wait",
-    "fchdir",
-    "fchmodat",
-    "fchown",
-    "fchownat",
-    "fcntl",
-    "fstat",
-    "fstatfs",
-    "futex",
-    "getdents",
-    "getdents64",
-    "getppid",
-    "getsockname",
-    "gettid",
-    "getuid",
-    "keyctl",
-    "mkdirat",
-    "mknodat",
-    "mmap",
-    "mount",
-    "mprotect",
-    "newfstatat",
-    "openat",
-    "prctl",
-    "read",
-    "readlinkat",
-    "recvfrom",
-    "sendto",
-    "setgid",
-    "setgroups",
-    "sethostname",
-    "setsid",
-    "setuid",
-    "sigaltstack",
-    "socket",
-    "statfs",
-    "symlinkat",
-    "umask",
-    "unlinkat",
-    "write",
-    // Go Runtime
-    "arch_prctl",
-    "epoll_pwait",
-    "epoll_create",
-    "epoll_ctl",
-    "openat",
-    "uname",
-    "rt_sigaction",
-    "rt_sigprocmask",
-];

@@ -21,8 +21,8 @@ use signal_hook::iterator::SignalsInfo;
 use crate::ioutil;
 use crate::ociutil;
 
+use oci_runtime_spec::{Arch, LinuxSeccomp, LinuxSeccompAction, LinuxSyscall, State};
 use sprofiler_bpf::*;
-use sprofiler_sys::oci::{Arch, LinuxSeccomp, LinuxSeccompAction, LinuxSyscall, State};
 
 lazy_static! {
     static ref SYSCALL_LIST: Mutex<HashSet<&'static str>> = Mutex::new(HashSet::new());

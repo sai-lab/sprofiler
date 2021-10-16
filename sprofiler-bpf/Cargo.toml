@@ -4,6 +4,8 @@ version = "0.1.0"
 authors = ["Takashi IIGUNI <iiguni.tks@gmail.com>"]
 edition = "2018"
 
+license-file = "../LICENSE"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
@@ -16,3 +18,4 @@ sprofiler-sys = { path="../sprofiler-sys" }
 serde_json = "1.0.62"
 nix = "0.20.0"
 signal-hook = { version = "0.3.6", features = ["extended-siginfo", "iterator"]  }
+oci_runtime_spec = { path = "../oci-runtime-spec" }
