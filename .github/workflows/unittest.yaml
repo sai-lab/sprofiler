@@ -24,8 +24,8 @@ jobs:
         with:
           command: install
           args: libbpf-cargo
-      - name: Temporary build to generate vmlinux.h
-        run: cargo build --all-features || true
+      - name: Generate vmlinux.h
+        run: bpftool btf dump file /sys/kernel/btf/vmlinux format c > ./sprofiler-bpf/src/bpf/vmlinux.h
       - name: cargo libbpf make
         uses: actions-rs/cargo@v1
         with:
