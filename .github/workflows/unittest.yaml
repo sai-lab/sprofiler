@@ -19,15 +19,20 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - uses: actions-rs/cargo@v1
+      - name: Install cargo libbpf
+        uses: actions-rs/cargo@v1
         with:
           command: install
           args: libbpf-cargo
-      - uses: actions-rs/cargo@v1
+      - name: Temporary build to generate vmlinux.h
+        command: cargo build --all-features || true
+      - name: cargo libbpf make
+        uses: actions-rs/cargo@v1
         with:
           command: libbpf
           args: make
-      - uses: actions-rs/cargo@v1
+      - name: cargo test --all-features
+        uses: actions-rs/cargo@v1
         with:
           command: test
           args: --all-features
