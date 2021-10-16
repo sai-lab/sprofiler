@@ -1,6 +1,8 @@
 # Sprofiler
 
-Seccomp Profiler for OCI Container
+[![CI](https://github.com/sai-lab/sprofiler/actions/workflows/ci.yaml/badge.svg)](https://github.com/sai-lab/sprofiler/actions/workflows/ci.yaml)
+
+Sprofiler generate seccomp profiles for OCI Container
 
 ## Environment
 
