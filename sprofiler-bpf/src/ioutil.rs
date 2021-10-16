@@ -6,7 +6,7 @@ use sprofiler_sys::oci::State;
 
 pub fn create_pid_file(path: PathBuf, pid: i32) -> anyhow::Result<()> {
     let mut file = File::create(path)?;
-    file.write_all(&pid.to_string().as_bytes())?;
+    file.write_all(pid.to_string().as_bytes())?;
 
     Ok(())
 }
