@@ -90,7 +90,7 @@ fn get_contianer_cgroup_id(container_id: &str) -> Result<u64> {
 }
 
 fn start_tracing(spinlock: Arc<AtomicBool>, state: &State) -> Result<()> {
-    let mut skel_builder = SystraceSkelBuilder::default();
+    let skel_builder = SystraceSkelBuilder::default();
     let mut systrace_skel = skel_builder.open()?;
 
     systrace_skel.rodata().target_cgid = get_contianer_cgroup_id(&state.id)?;
