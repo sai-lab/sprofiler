@@ -1,5 +1,14 @@
 name: CI
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    # JTC 10:00(AM) everyday
+    - cron: '0 1 * * *'
 
 # Note: runnner must use BTF(BPF Typed format) Kernel
 # Ubuntu >= 20.10
