@@ -8,6 +8,9 @@
 
 const volatile u64 target_cgid = 51097;
 
+enum FILTER_STATE { Prestart, Running, Exited };
+volatile enum FILTER_STATE state = Prestart;
+
 struct sys_enter_event_t {
   uid_t uid;
   __u64 cgid;
@@ -31,10 +34,28 @@ static __always_inline bool is_trace_target() {
   return true;
 }
 
+static __always_inline bool is_started(u64 nr) {
+  switch (state) {
+  case Prestart:
+    // SYS_prctl x86_64
+    if (nr == 157) {
+      state = Running;
+    }
+    return false;
+  case Running:
+    return true;
+  case Exited:
+    return false;
+  }
+}
+
 SEC("tracepoint/raw_syscalls/sys_enter")
 int tracepoint__raw_syscalls__sys_enter(struct trace_event_raw_sys_enter *ctx) {
 
   if (!is_trace_target())
+    return 0;
+
+  if (!is_started(ctx->id))
     return 0;
 
   struct sys_enter_event_t event = {};
@@ -42,6 +63,7 @@ int tracepoint__raw_syscalls__sys_enter(struct trace_event_raw_sys_enter *ctx) {
   event.uid = bpf_get_current_uid_gid();
   event.cgid = bpf_get_current_cgroup_id();
   event.syscall_nr = ctx->id;
+
   bpf_get_current_comm(&event.comm, TASK_COMM_LEN);
 
   bpf_perf_event_output(ctx, &sys_enter_events, BPF_F_CURRENT_CPU, &event,
