@@ -19,7 +19,7 @@ Vagrant.configure("2") do |config|
     # - Cgroup v2 enable (Require reboot after provisioning)
     node.vm.provision "shell", inline: <<-SHELL
       apt-get update
-      apt-get install -y libelf-dev libgcc-s1 libbpf-dev clang curl linux-tools-generic make podman
+      apt-get install -y libelf-dev libgcc-s1 libbpf-dev clang curl linux-tools-generic linux-tools-common make podman
       sed -i 's/GRUB_CMDLINE_LINUX=\"\(.*\)\"/GRUB_CMDLINE_LINUX=\"\1 systemd.unified_cgroup_hierarchy=1\"/' /etc/default/grub
       update-grub
     SHELL
