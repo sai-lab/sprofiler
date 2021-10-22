@@ -26,8 +26,7 @@ Vagrant.configure("2") do |config|
       curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly -y
       source $HOME/.cargo/env
       cargo install libbpf-cargo
-      cd /vagrant
-      bpftool btf dump file /sys/kernel/btf/vmlinux format c > ./sprofiler-bpf/src/bpf/vmlinux.h
+      bpftool btf dump file /sys/kernel/btf/vmlinux format c > /vagrant/sprofiler-bpf/src/bpf/vmlinux.h
       cargo libbpf make
     SHELL
   end
