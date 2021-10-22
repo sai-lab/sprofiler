@@ -25,7 +25,7 @@ cargo libbpf make
 
 ```
 # Run container with dynamic analyzer
-sudo podman run --security-opt=no-new-privileges \
+sudo podman run \
     --annotation "io.sprofiler.output_seccomp_profile_path=$(pwd)/seccomp-profile.json" \
     ghcr.io/sai-lab/hello-c:latest
 
