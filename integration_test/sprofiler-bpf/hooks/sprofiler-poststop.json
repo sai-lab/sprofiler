@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0",
+  "hook": {
+    "path": "/root/.cargo/bin/sprofiler-bpf",
+    "args": ["sprofiler-bpf", "stop"]
+  },
+  "when": {
+  	"annotations": {
+            "^io\\.sprofiler\\.output_seccomp_profile_path$": ".*"
+        }
+  },
+  "stages": ["poststop"]
+}
+

@@ -8,6 +8,7 @@ Vagrant.configure("2") do |config|
 
 
     node.vm.synced_folder ".", "/vagrant", type: "rsync"
+    node.vm.synced_folder "./integration_test/sprofiler-bpf/hooks", "/etc/containers/oci/hooks.d", type: "rsync"
 
     node.vm.provider :libvirt do |domain|
       domain.memory = 8192
