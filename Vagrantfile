@@ -4,7 +4,7 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "fedora/34-cloud-base"
 
-  config.vm.define :iiguni_sprofiler do |node|
+  config.vm.define :sprofiler_dev do |node|
 
 
     node.vm.synced_folder ".", "/vagrant", type: "rsync"
