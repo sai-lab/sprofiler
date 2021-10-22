@@ -32,7 +32,7 @@ sudo podman run --security-opt=no-new-privileges \
 # Run container enable no-new-privileges with dynamic analyzer 
 sudo podman run --security-opt=no-new-privileges \
     --annotation "io.sprofiler.output_seccomp_profile_path=$(pwd)/seccomp-profile.json" \
-    guni1192/clang-app
+    ghcr.io/sai-lab/hello-c:latest
 
 # check
 sudo podman run --rm --security-opt seccomp=$(pwd)/seccomp-profile.json guni1192/clang-app
