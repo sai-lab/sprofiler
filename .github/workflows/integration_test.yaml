@@ -22,13 +22,13 @@ jobs:
       - name: Setup Rust
         run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sudo sh -s -- -y --default-toolchain nightly
       - name: Setup Rust
-        run: sudo cargo install libbpf-cargo
+        run: sudo -E cargo install libbpf-cargo
       - name: Generate vmlinux.h
         run: bpftool btf dump file /sys/kernel/btf/vmlinux format c > ./sprofiler-bpf/src/bpf/vmlinux.h
       - name: cargo libbpf make
-        run: sudo cargo libbpf make
+        run: sudo -E cargo libbpf make
       - name: Running integration test
-        run: ./integration_test/sprofiler-bpf/integration_test.sh
+        run: sudo ./integration_test/sprofiler-bpf/integration_test.sh
       - name: 'Upload Artifact'
         uses: actions/upload-artifact@v2
         with:
