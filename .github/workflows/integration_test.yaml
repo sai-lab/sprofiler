@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install libraries
-        run: sudo apt-get install -y libelf-dev libgcc-s1 libbpf-dev clang linux-tools-common linux-tools-generic make pkg-config
+        run: sudo apt-get install -y libelf-dev libgcc-s1 libbpf-dev clang linux-tools-common linux-tools-generic make pkg-config podman
       - name:  Running Tests
         run: |
           sudo -i
