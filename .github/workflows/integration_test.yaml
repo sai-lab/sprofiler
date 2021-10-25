@@ -13,22 +13,22 @@ on:
 # Note: runnner must use BTF(BPF Typed format) Kernel
 # Ubuntu >= 20.10
 jobs:
-  tests:
+  integration_test:
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v2
       - name: Install libraries
         run: sudo apt-get install -y libelf-dev libgcc-s1 libbpf-dev clang linux-tools-common linux-tools-generic make pkg-config
-      - name: Setup Rust
-        run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sudo sh -s -- -y --default-toolchain nightly
-      - name: Setup Rust
-        run: sudo -E cargo install libbpf-cargo
-      - name: Generate vmlinux.h
-        run: bpftool btf dump file /sys/kernel/btf/vmlinux format c > ./sprofiler-bpf/src/bpf/vmlinux.h
-      - name: cargo libbpf make
-        run: sudo -E cargo libbpf make
-      - name: Running integration test
-        run: sudo ./integration_test/sprofiler-bpf/integration_test.sh
+      - name:  Running Tests
+        run: |
+          sudo -i
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain nightly
+          cargo install libbpf-cargo
+          source $HOME/.cargo/env
+          bpftool btf dump file /sys/kernel/btf/vmlinux format c > ./sprofiler-bpf/src/bpf/vmlinux.h
+          cargo libbpf make
+          ./integration_test/sprofiler-bpf/integration_test.sh
+
       - name: 'Upload Artifact'
         uses: actions/upload-artifact@v2
         with:
