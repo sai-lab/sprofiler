@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "hook": {
-    "path": "$HOME/.cargo/bin/sprofiler-bpf",
+    "path": "/home/vagrant/actions-runner/_work/sprofiler/sprofiler/sprofiler-bpf",
     "args": ["sprofiler-bpf","start"]
   },
   "when": {
