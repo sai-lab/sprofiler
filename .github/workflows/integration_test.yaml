@@ -20,7 +20,7 @@ jobs:
       - name: Install libraries
         run: sudo apt-get install -y libelf-dev libgcc-s1 libbpf-dev clang linux-tools-common linux-tools-generic make pkg-config
       - name: Setup Rust
-        run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sudo sh
+        run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sudo sh -y
       - name: Setup Rust
         run: sudo cargo install libbpf-cargo
       - name: Generate vmlinux.h
