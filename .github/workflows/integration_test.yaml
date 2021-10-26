@@ -27,8 +27,8 @@ jobs:
           source $HOME/.cargo/env
           bpftool btf dump file /sys/kernel/btf/vmlinux format c > ./sprofiler-bpf/src/bpf/vmlinux.h
           cargo libbpf make
-          cargo install --path ./sprofiler-bpf
-          ./integration_test/sprofiler-bpf/integration_test.sh
+          cargo install --path ./sprofiler
+          sprofiler --help
 
       - name: 'Upload Artifact'
         uses: actions/upload-artifact@v2
