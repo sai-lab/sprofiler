@@ -22,6 +22,7 @@ use crate::ioutil;
 use crate::ociutil;
 
 use oci_runtime_spec::{Arch, LinuxSeccomp, LinuxSeccompAction, LinuxSyscall, State};
+use ociutil::RuntimeClass;
 use sprofiler_bpf::*;
 
 lazy_static! {
@@ -48,6 +49,11 @@ fn handle_event(_cpu: i32, data: &[u8]) {
     if let Some(syscall_name) = syscall_name {
         let mut syscall_list = SYSCALL_LIST.lock().unwrap();
         syscall_list.insert(syscall_name);
+
+        if *syscall_name == "execve" {
+            let pid = std::process::id() as i32;
+            kill(Pid::from_raw(pid), Signal::SIGUSR1).expect("failed to send signal");
+        }
     }
 }
 
@@ -78,14 +84,19 @@ fn gen_seccomp_rule() -> anyhow::Result<LinuxSeccomp> {
 }
 
 /// only work when cgroup driver is systemd & v2 on podman
-fn get_contianer_cgroup_id(container_id: &str) -> Result<u64> {
-    let path = format!(
-        "/sys/fs/cgroup/machine.slice/libpod-{}.scope/container",
+fn get_contianer_cgroup_id(container_id: &str, runtime_kind: RuntimeClass) -> Result<u64> {
+    let base_cgroup_path = PathBuf::from(format!(
+        "/sys/fs/cgroup/machine.slice/libpod-{}.scope",
         container_id
-    );
-    let path = PathBuf::from(path);
+    ));
+    let path = match runtime_kind {
+        RuntimeClass::Runc => base_cgroup_path,
+        RuntimeClass::Crun => base_cgroup_path.join("containers"),
+        RuntimeClass::Youki => base_cgroup_path,
+    };
     let meta = fs::metadata(&path)
         .with_context(|| format!("failed to get metadata from {}", path.display()))?;
+
     Ok(meta.ino())
 }
 
@@ -93,7 +104,8 @@ fn start_tracing(spinlock: Arc<AtomicBool>, state: &State) -> Result<()> {
     let skel_builder = SystraceSkelBuilder::default();
     let mut systrace_skel = skel_builder.open()?;
 
-    systrace_skel.rodata().target_cgid = get_contianer_cgroup_id(&state.id)?;
+    let runtime_class = ociutil::get_runtime_class(state);
+    systrace_skel.rodata().target_cgid = get_contianer_cgroup_id(&state.id, runtime_class)?;
 
     let mut skel = systrace_skel.load()?;
 
@@ -119,7 +131,7 @@ fn start_tracing(spinlock: Arc<AtomicBool>, state: &State) -> Result<()> {
     Ok(())
 }
 
-pub fn trace_command() -> Result<()> {
+pub fn trace_command(runtime_only: bool) -> Result<()> {
     let state = ioutil::container_state_load_from_reader(io::stdin()).expect("state load error:");
     let pid = std::process::id() as i32;
     ioutil::create_pid_file(state.bundle.join("sprofiler.pid"), pid)?;
