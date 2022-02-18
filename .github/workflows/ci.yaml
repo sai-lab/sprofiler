@@ -37,7 +37,7 @@ jobs:
           command: install
           args: libbpf-cargo
       - name: Generate vmlinux.h
-        run: bpftool btf dump file /sys/kernel/btf/vmlinux format c > ./sprofiler-bpf/src/bpf/vmlinux.h
+        run: bpftool btf dump file /sys/kernel/btf/vmlinux format c > ./sprofiler/src/bpf/vmlinux.h
       - name: cargo libbpf make
         uses: actions-rs/cargo@v1
         with:
@@ -76,7 +76,7 @@ jobs:
           command: install
           args: libbpf-cargo
       - name: Generate vmlinux.h
-        run: bpftool btf dump file /sys/kernel/btf/vmlinux format c > ./sprofiler-bpf/src/bpf/vmlinux.h
+        run: bpftool btf dump file /sys/kernel/btf/vmlinux format c > ./sprofiler/src/bpf/vmlinux.h
       - name: cargo libbpf make
         uses: actions-rs/cargo@v1
         with:
