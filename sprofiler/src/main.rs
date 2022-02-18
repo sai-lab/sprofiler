@@ -25,14 +25,14 @@ use profile_util::DiffStatus;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "sprofiler")]
-enum Sprofiler {
-    Static(Static),
-    Dynamic(Dynamic),
+enum SprofilerCommand {
+    Static(StaticSubCommand),
+    Dynamic(DynamicSubCommand),
 }
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "static", about = "Static Analyzer")]
-enum Static {
+enum StaticSubCommand {
     /// Generate seccomp profile from ELF
     Run {
         /// Input binary file
@@ -68,7 +68,7 @@ enum Static {
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "dynamic", about = "Dynamic Analyzer")]
-enum Dynamic {
+enum DynamicSubCommand {
     Start {},
     Stop {},
     Tracer {},
@@ -144,26 +144,26 @@ fn do_merge(paths: Vec<PathBuf>, out: PathBuf) -> Result<()> {
     Ok(())
 }
 
-fn handle_static_analyzer(static_: Static) -> Result<()> {
+fn handle_static_analyzer(static_: StaticSubCommand) -> Result<()> {
     match static_ {
-        Static::Run {
+        StaticSubCommand::Run {
             bin,
             out,
             lang,
             map,
         } => do_run(bin, out, map, &lang)?,
-        Static::Diff { path1, path2 } => do_diff(path1, path2)?,
-        Static::Merge { paths, out } => do_merge(paths, out)?,
+        StaticSubCommand::Diff { path1, path2 } => do_diff(path1, path2)?,
+        StaticSubCommand::Merge { paths, out } => do_merge(paths, out)?,
     };
 
     Ok(())
 }
 
-fn handle_dynamic_analyzer(dynamic: Dynamic) -> Result<()> {
+fn handle_dynamic_analyzer(dynamic: DynamicSubCommand) -> Result<()> {
     match dynamic {
-        Dynamic::Start {} => run_trace_command()?,
-        Dynamic::Stop {} => stop_tracing()?,
-        Dynamic::Tracer {} => trace_command()?,
+        DynamicSubCommand::Start {} => run_trace_command()?,
+        DynamicSubCommand::Stop {} => stop_tracing()?,
+        DynamicSubCommand::Tracer {} => trace_command()?,
     }
     Ok(())
 }
@@ -180,11 +180,11 @@ fn run_trace_command() -> anyhow::Result<()> {
 }
 
 fn main() -> Result<()> {
-    let sprofiler_cmd = Sprofiler::from_args();
+    let sprofiler_cmd = SprofilerCommand::from_args();
 
     match sprofiler_cmd {
-        Sprofiler::Static(static_) => handle_static_analyzer(static_)?,
-        Sprofiler::Dynamic(dynamic_) => handle_dynamic_analyzer(dynamic_)?,
+        SprofilerCommand::Static(static_) => handle_static_analyzer(static_)?,
+        SprofilerCommand::Dynamic(dynamic) => handle_dynamic_analyzer(dynamic)?,
     }
 
     Ok(())
