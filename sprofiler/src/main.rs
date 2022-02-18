@@ -1,3 +1,17 @@
+use std::process::{Command, Stdio};
+use std::str;
+
+mod command;
+use command::tracer::{stop_tracing, trace_command};
+
+mod ioutil;
+mod ociutil;
+
+mod bpf;
+use bpf::*;
+
+mod syscalls;
+
 use std::fs::File;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -11,7 +25,14 @@ use profile_util::DiffStatus;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "sprofiler")]
-enum Command {
+enum Sprofiler {
+    Static(Static),
+    Dynamic(Dynamic),
+}
+
+#[derive(Debug, StructOpt)]
+#[structopt(name = "static", about = "Static Analyzer")]
+enum Static {
     /// Generate seccomp profile from ELF
     Run {
         /// Input binary file
@@ -43,6 +64,14 @@ enum Command {
         #[structopt(short, long, parse(from_os_str))]
         out: PathBuf,
     },
+}
+
+#[derive(Debug, StructOpt)]
+#[structopt(name = "dynamic", about = "Dynamic Analyzer")]
+enum Dynamic {
+    Start {},
+    Stop {},
+    Tracer {},
 }
 
 fn do_run(bin: PathBuf, out: PathBuf, map: Option<PathBuf>, lang: &str) -> Result<()> {
@@ -115,19 +144,48 @@ fn do_merge(paths: Vec<PathBuf>, out: PathBuf) -> Result<()> {
     Ok(())
 }
 
-fn main() -> Result<()> {
-    let command = Command::from_args();
-
-    match command {
-        Command::Run {
+fn handle_static_analyzer(static_: Static) -> Result<()> {
+    match static_ {
+        Static::Run {
             bin,
             out,
             lang,
             map,
         } => do_run(bin, out, map, &lang)?,
-        Command::Diff { path1, path2 } => do_diff(path1, path2)?,
-        Command::Merge { paths, out } => do_merge(paths, out)?,
+        Static::Diff { path1, path2 } => do_diff(path1, path2)?,
+        Static::Merge { paths, out } => do_merge(paths, out)?,
     };
+
+    Ok(())
+}
+
+fn handle_dynamic_analyzer(dynamic: Dynamic) -> Result<()> {
+    match dynamic {
+        Dynamic::Start {} => run_trace_command()?,
+        Dynamic::Stop {} => stop_tracing()?,
+        Dynamic::Tracer {} => trace_command()?,
+    }
+    Ok(())
+}
+
+fn run_trace_command() -> anyhow::Result<()> {
+    Command::new("/proc/self/exe")
+        .arg("tracer")
+        .stdin(Stdio::inherit())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()?;
+
+    Ok(())
+}
+
+fn main() -> Result<()> {
+    let sprofiler_cmd = Sprofiler::from_args();
+
+    match sprofiler_cmd {
+        Sprofiler::Static(static_) => handle_static_analyzer(static_)?,
+        Sprofiler::Dynamic(dynamic_) => handle_dynamic_analyzer(dynamic_)?,
+    }
 
     Ok(())
 }

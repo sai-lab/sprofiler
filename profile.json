@@ -1,0 +1,1 @@
+{"defaultAction":"SCMP_ACT_ERRNO","architectures":["SCMP_ARCH_X86_64"],"syscalls":[{"names":["write","writev","access","arch_prctl","brk","fstat","mmap","mprotect","munmap","openat","pread64","read","rt_sigaction","rt_sigprocmask","exit_group","close"],"action":"SCMP_ACT_ALLOW"}]}
