@@ -1,3 +1,2 @@
 src/bpf/vmlinux.h
-src/bpf/*.bpf.c
 src/bpf/*.skel.rs
