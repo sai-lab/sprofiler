@@ -29,7 +29,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: install
-          args: libbpf-cargo
+          args: libbpf-cargo cargo-deb
       - name: Generate vmlinux.h
         run: bpftool btf dump file /sys/kernel/btf/vmlinux format c > ./sprofiler/src/bpf/vmlinux.h
       - name: cargo libbpf make
