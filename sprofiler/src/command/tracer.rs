@@ -17,11 +17,11 @@ use plain::Plain;
 use signal_hook::consts::*;
 use signal_hook::iterator::exfiltrator::WithOrigin;
 use signal_hook::iterator::SignalsInfo;
+use sprofiler_sys::arch::x86_64::SYSCALLS;
 
 use crate::bpf::*;
-use crate::ioutil;
-use crate::ociutil;
-use crate::syscalls;
+use crate::dynamic::annotation;
+use crate::dynamic::process;
 
 use oci_runtime_spec::{Arch, LinuxSeccomp, LinuxSeccompAction, LinuxSyscall, State};
 
@@ -44,7 +44,7 @@ fn handle_event(_cpu: i32, data: &[u8]) {
     let mut event = SysEnterEvent::default();
     plain::copy_from_bytes(&mut event, data).expect("Data buffer was too short or invalid");
 
-    let syscall_name = syscalls::SYSCALLS.get(&(event.syscall_nr as u32));
+    let syscall_name = SYSCALLS.get(&(event.syscall_nr as u32));
 
     if let Some(syscall_name) = syscall_name {
         let mut syscall_list = SYSCALL_LIST.lock().unwrap();
@@ -112,7 +112,7 @@ fn start_tracing(spinlock: Arc<AtomicBool>, state: &State) -> Result<()> {
         };
     }
 
-    if let Some(path) = ociutil::get_trace_target_path(state) {
+    if let Some(path) = annotation::get_trace_target_path(state) {
         let file = File::create(path)?;
         serde_json::to_writer(file, &gen_seccomp_rule()?)?;
     };
@@ -121,9 +121,9 @@ fn start_tracing(spinlock: Arc<AtomicBool>, state: &State) -> Result<()> {
 }
 
 pub fn trace_command() -> Result<()> {
-    let state = ioutil::container_state_load_from_reader(io::stdin()).expect("state load error:");
+    let state = process::container_state_load_from_reader(io::stdin()).expect("state load error:");
     let pid = std::process::id() as i32;
-    ioutil::create_pid_file(state.bundle.join("sprofiler.pid"), pid)?;
+    process::create_pid_file(state.bundle.join("sprofiler.pid"), pid)?;
 
     let spinlock = Arc::new(AtomicBool::new(true));
     let spinlock_clone = Arc::clone(&spinlock);
@@ -149,8 +149,8 @@ pub fn trace_command() -> Result<()> {
 
 pub fn stop_tracing() -> anyhow::Result<()> {
     let state =
-        ioutil::container_state_load_from_reader(std::io::stdin()).expect("state load error:");
-    let pid = ioutil::read_pid_file(state.bundle.join("sprofiler.pid"))?;
+        process::container_state_load_from_reader(std::io::stdin()).expect("state load error:");
+    let pid = process::read_pid_file(state.bundle.join("sprofiler.pid"))?;
     kill(Pid::from_raw(pid), Signal::SIGUSR1)?;
 
     Ok(())
