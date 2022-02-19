@@ -1,0 +1,14 @@
+{
+  "version": "0.1.0",
+  "hook": {
+    "path": "/usr/bin/sprofiler",
+    "args": ["sprofiler", "dynamic", "stop"]
+  },
+  "when": {
+    "annotations": {
+            "^io\\.sprofiler\\.output_seccomp_profile_path$": ".*"
+        }
+  },
+  "stages": ["poststop"]
+}
+
