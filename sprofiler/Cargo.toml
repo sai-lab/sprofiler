@@ -17,5 +17,5 @@ oci_runtime_spec = { path = "../oci-runtime-spec" }
 lazy_static = "1.4.0"
 libbpf-rs = "0.11"
 plain = "0.2.3"
-nix = "0.20.0"
+nix = "0.23.1"
 signal-hook = { version = "0.3.6", features = ["extended-siginfo", "iterator"]  }
