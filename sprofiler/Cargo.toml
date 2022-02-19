@@ -24,6 +24,7 @@ signal-hook = { version = "0.3.6", features = ["extended-siginfo", "iterator"]  
 
 depends = "libelf1"
 assets = [
+    ["target/release/sprofiler", "usr/bin/", "755"],
     ["conf/sprofiler-prestart.json", "usr/share/containers/oci/hooks.d/", "644"],
     ["conf/sprofiler-poststop.json", "usr/share/containers/oci/hooks.d/", "644"]
 ]
