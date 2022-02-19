@@ -409,17 +409,6 @@ name = "sprofiler"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "oci_runtime_spec",
- "serde_json",
- "sprofiler-sys",
- "structopt",
-]
-
-[[package]]
-name = "sprofiler-bpf"
-version = "0.1.0"
-dependencies = [
- "anyhow",
  "lazy_static",
  "libbpf-rs",
  "nix 0.20.2",

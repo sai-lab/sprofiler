@@ -11,6 +11,14 @@ pub fn is_syscall(syscall_name: &str) -> bool {
     false
 }
 
+pub fn to_syscall_number(syscall_name: &str) -> Vec<u32> {
+    SYSCALLS
+        .iter()
+        .filter(|(_, name)| *name == &syscall_name)
+        .map(|(number, _)| *number)
+        .collect()
+}
+
 lazy_static! {
     pub static ref SYSCALLS: HashMap<u32, &'static str> = {
         let mut s = HashMap::new();
