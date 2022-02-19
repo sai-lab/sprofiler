@@ -41,9 +41,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: deb
-          args:
-            - -p
-            - sprofiler
+          args: -p sprofiler
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
