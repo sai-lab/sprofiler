@@ -115,14 +115,17 @@ fn start_tracing(spinlock: Arc<AtomicBool>, state: &State) -> Result<()> {
     if let Some(path) = annotation::get_trace_target_path(state) {
         let file = File::create(path)?;
         serde_json::to_writer(file, &gen_seccomp_rule()?)?;
-    };
+    }
 
     Ok(())
 }
 
 pub fn trace_command() -> Result<()> {
     let state = process::container_state_load_from_reader(io::stdin()).expect("state load error:");
+
     let pid = std::process::id() as i32;
+    println!("PID: {pid}");
+
     process::create_pid_file(state.bundle.join("sprofiler.pid"), pid)?;
 
     let spinlock = Arc::new(AtomicBool::new(true));

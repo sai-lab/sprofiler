@@ -28,10 +28,11 @@ pub fn handle_dynamic_analyzer(dynamic: DynamicSubCommand) -> Result<()> {
 
 fn run_trace_command() -> anyhow::Result<()> {
     Command::new("/proc/self/exe")
+        .arg("dynamic")
         .arg("tracer")
         .stdin(Stdio::inherit())
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit())
         .spawn()?;
 
     Ok(())
