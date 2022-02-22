@@ -9,6 +9,7 @@ mod testing;
 use testing::run_tests;
 
 mod hooks;
+mod podman;
 mod seccomp;
 
 #[derive(Parser, Debug)]

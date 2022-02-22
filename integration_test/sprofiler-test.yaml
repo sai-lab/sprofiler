@@ -16,7 +16,7 @@ tests:
     shouldSuccess: true
   - name: hello-go
     image: ghcr.io/sai-lab/hello-go:latest
-    noNewPriv: true
+    noNewPriv: false
     runtime: crun
     shouldSuccess: true
   - name: hello-go.no_new_priv
