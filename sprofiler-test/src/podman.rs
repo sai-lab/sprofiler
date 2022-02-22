@@ -14,12 +14,13 @@ pub struct PodmanRunner {
     image: String,
     pub sprofiler_output: Option<PathBuf>,
     debug: bool,
+    no_new_priv: bool,
 }
 
 impl PodmanRunner {
     pub fn args(&self) -> Vec<String> {
         let podman_path = format!("{}", self.podman_path.display());
-        let mut args = vec![podman_path.to_string()];
+        let mut args = vec![podman_path];
 
         if self.debug {
             args.push(self.log_level_arg("debug"));
@@ -28,6 +29,11 @@ impl PodmanRunner {
         args.push(self.runtime_arg());
         args.push("run".to_string());
         args.push("--rm".to_string());
+
+        if self.no_new_priv {
+            args.push(self.no_new_priv_arg());
+        }
+
         args.push(self.hooks_dir_arg());
         args.push(self.sprofiler_annotation());
         args.push(self.image.clone());
@@ -62,6 +68,10 @@ impl PodmanRunner {
 
     fn hooks_dir_arg(&self) -> String {
         format!("--hooks-dir={}", self.hooks_dir.display())
+    }
+
+    fn no_new_priv_arg(&self) -> String {
+        "--security-opt=no-new-privileges".to_string()
     }
 
     fn sprofiler_annotation(&self) -> String {

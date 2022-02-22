@@ -54,6 +54,7 @@ where
         .hooks_dir(hooks_dir)
         .image(&testcase.image)
         .sprofiler_output(&seccomp_profile_path)
+        .no_new_priv(testcase.no_new_priv)
         .debug(false)
         .build()?;
 
@@ -95,12 +96,13 @@ pub fn assert_seccomp_profile(testname: &str, seccomp: LinuxSeccomp) {
     assert!(seccomp.syscalls.is_some());
     info!("[{}] OK seccomp.syscalls.is_some()", testname);
     if let Some(syscalls) = seccomp.syscalls {
-        assert!(syscalls.len() > 0);
-        info!("[{}] OK seccomp.syscalls.len() > 0", testname);
+        assert!(syscalls.is_empty());
+        info!("[{}] OK seccomp.syscalls.is_empty()", testname);
 
         for syscall in syscalls {
-            assert!(syscall.names.len() > 0);
-            info!("[{}] OK seccomp.syscalls.names.len() > 0", testname);
+            assert!(syscall.names.is_empty());
+
+            info!("[{}] OK seccomp.syscalls.names.is_empty()", testname);
 
             assert_eq!(syscall.action, LinuxSeccompAction::SCMP_ACT_ALLOW);
             info!(
@@ -125,7 +127,6 @@ pub fn run_tests(testing: Testing) -> Result<()> {
     trace!("Podman Path: {}", testing.config.podman.display());
 
     let base_dir = tempdir::TempDir::new("sprofiler-test")?;
-    // let base_dir = PathBuf::from("/tmp/sprofiler-test");
     let hooks_dir =
         hooks::create_hook_config(base_dir.path().to_path_buf(), testing.config.sprofiler)?;
 
