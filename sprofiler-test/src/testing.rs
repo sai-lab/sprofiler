@@ -96,17 +96,17 @@ pub fn assert_seccomp_profile(testname: &str, seccomp: LinuxSeccomp) {
     assert!(seccomp.syscalls.is_some());
     info!("[{}] OK seccomp.syscalls.is_some()", testname);
     if let Some(syscalls) = seccomp.syscalls {
-        assert!(syscalls.is_empty());
-        info!("[{}] OK seccomp.syscalls.is_empty()", testname);
+        assert!(!syscalls.is_empty());
+        info!("[{}] OK !seccomp.syscalls.is_empty()", testname);
 
         for syscall in syscalls {
-            assert!(syscall.names.is_empty());
+            assert!(!syscall.names.is_empty());
 
-            info!("[{}] OK seccomp.syscalls.names.is_empty()", testname);
+            info!("[{}] OK !seccomp.syscalls[i].names.is_empty()", testname);
 
             assert_eq!(syscall.action, LinuxSeccompAction::SCMP_ACT_ALLOW);
             info!(
-                "[{}] OK seccomp.syscalls.action == SCMP_ACT_ALLOW",
+                "[{}] OK seccomp.syscalls[i].action == SCMP_ACT_ALLOW",
                 testname
             );
         }
