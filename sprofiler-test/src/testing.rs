@@ -1,16 +1,15 @@
 use std::fs::File;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
 use std::thread::sleep;
 use std::time::Duration;
 
 use anyhow::{bail, Result};
-use derive_builder::Builder;
 use oci_runtime_spec::{LinuxSeccomp, LinuxSeccompAction};
 use serde::{Deserialize, Serialize};
 use tracing::{error, info, trace};
 
 use crate::hooks;
+use crate::podman::PodmanRunnerBuilder;
 use crate::seccomp;
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -36,77 +35,6 @@ pub struct Test {
     pub runtime: String,
     pub should_success: bool,
     pub image: String,
-}
-
-#[derive(Default, Debug, Clone, Builder)]
-#[builder(pattern = "owned", setter(into, strip_option))]
-pub struct PodmanRunner {
-    podman_path: PathBuf,
-    hooks_dir: PathBuf,
-    runtime: String,
-    image: String,
-    sprofiler_output: Option<PathBuf>,
-    debug: bool,
-}
-
-impl PodmanRunner {
-    fn args(&self) -> Vec<String> {
-        let podman_path = format!("{}", self.podman_path.display());
-        let mut args = vec![podman_path.to_string()];
-
-        if self.debug {
-            args.push(self.log_level_arg("debug"));
-        }
-
-        args.push(self.runtime_arg());
-        args.push("run".to_string());
-        args.push("--rm".to_string());
-        args.push(self.hooks_dir_arg());
-        args.push(self.sprofiler_annotation());
-        args.push(self.image.clone());
-        args
-    }
-
-    fn run(&self) -> Result<()> {
-        let args = self.args();
-        let output = Command::new(&args[0])
-            .args(&args[1..])
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .output()?;
-
-        if output.status.success() {
-            trace!("Podman exit code: {}", output.status);
-        } else {
-            let stderr = String::from_utf8(output.stderr)?;
-            error!("Error: {}", stderr);
-            error!("Podman exit code: {}", output.status);
-        }
-        Ok(())
-    }
-
-    fn runtime_arg(&self) -> String {
-        format!("--runtime={}", self.runtime)
-    }
-
-    fn log_level_arg(&self, level: &str) -> String {
-        format!("--log-level={}", level)
-    }
-
-    fn hooks_dir_arg(&self) -> String {
-        format!("--hooks-dir={}", self.hooks_dir.display())
-    }
-
-    fn sprofiler_annotation(&self) -> String {
-        if let Some(sprofiler_output) = self.sprofiler_output.as_ref() {
-            format!(
-                "--annotation=\"io.sprofiler.output_seccomp_profile_path={}\"",
-                sprofiler_output.display()
-            )
-        } else {
-            "".to_string()
-        }
-    }
 }
 
 pub fn execute_test_case<P: AsRef<Path>>(
