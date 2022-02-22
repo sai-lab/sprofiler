@@ -1,6 +1,8 @@
 # Sprofiler
 
-[![CI](https://github.com/sai-lab/sprofiler/actions/workflows/ci.yaml/badge.svg)](https://github.com/sai-lab/sprofiler/actions/workflows/ci.yaml)
+**This project is not maintained.
+Sprofiler is maintained in this repository.**
+https://github.com/guni1192/sprofiler
 
 Sprofiler generate seccomp profiles for OCI Container
 
