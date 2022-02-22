@@ -38,6 +38,13 @@ sudo podman run --security-opt=no-new-privileges \
 sudo podman run --rm --security-opt seccomp=$(pwd)/seccomp-profile.json guni1192/clang-app
 ```
 
+## Testing
+
+```
+cargo libbpf make
+sudo -E ./target/debug/sprofiler-test ./integration_test/sprofiler-test.yaml
+```
+
 ## Vagrant for develop environment
 
 ```
