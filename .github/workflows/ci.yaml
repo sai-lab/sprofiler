@@ -21,6 +21,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: 1.58.1
+          override: true
           components: rustfmt, clippy
       - name: Install libraries
         run: sudo apt-get install -y libelf-dev libgcc-s1 libbpf-dev clang linux-tools-common linux-tools-generic make pkg-config
